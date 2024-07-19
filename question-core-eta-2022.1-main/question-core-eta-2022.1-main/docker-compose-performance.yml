@@ -1,0 +1,33 @@
+version: '3'
+services:
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_DB=question
+      - POSTGRES_PASSWORD=123456
+
+  core:
+    image: registry.gitlab.com/kls6771243/question-core-eta-2022.1
+    depends_on:
+      - postgres
+    env_file: question.conf
+    ports:
+      - 8000:8000
+    working_dir: /usr/src/app
+    command: >-
+                /bin/sh -c "./wait-for-it.sh -t 180 postgres:5432 -- echo 'postgres is up'
+                && python -u manage.py migrate
+                && python -u production-server.py"
+
+  jmeter:
+    image: justb4/jmeter
+    depends_on:
+      - core
+    working_dir: /tmp
+    volumes:
+      - .:/tmp
+    entrypoint: >-
+                  /bin/sh -c "./wait-for-it.sh -t 300 core:8000 -- echo 'core is up'
+                  && jmeter -Jhostname=core -Jport=8000 -Jvirtual_user=5 -Jstart_time=10 -Jduration=120 -n -t question.jmx
+                  && jmeter -g question.csv -o html_report"

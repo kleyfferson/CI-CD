@@ -1,0 +1,25 @@
+version: '3.7'
+services:
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=question
+      - POSTGRES_PASSWORD=123456
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  api:
+    image: registry.gitlab.com/kls6771243/question-core-eta-2022.1
+    ports:
+      - 8000:8000
+    env_file: question.conf
+    command: >-
+            /bin/sh -c "./wait-for-it.sh -t 60 postgres:5432 -- echo 'postgres is up'
+            && python -u manage.py migrate
+            && python -u production-server.py"
+
+volumes:
+  db-data:

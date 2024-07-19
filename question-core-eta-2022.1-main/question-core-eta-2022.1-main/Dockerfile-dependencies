@@ -1,0 +1,20 @@
+FROM python:3.8-slim
+
+ENV APP_PATH /usr/src/app
+
+RUN mkdir -p $APP_PATH \
+  && apt-get update && apt-get install -y \
+    unixodbc \
+    unixodbc-dev \
+    libpq-dev \
+    python3-dev \
+    build-essential \
+  && apt-get autoremove -y \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR $APP_PATH
+
+COPY requirements.txt .
+
+RUN pip install --upgrade pip \
+  && pip install --no-cache-dir -r requirements.txt

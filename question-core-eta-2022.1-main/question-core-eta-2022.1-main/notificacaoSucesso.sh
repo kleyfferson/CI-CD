@@ -1,0 +1,1 @@
+curl -X POST -H 'Content-type: application/json' --data ' {"text": "Aee passou nosso Pipeline!"}' https://hooks.slack.com/services/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
